@@ -35,9 +35,9 @@ CREATE TABLE IF NOT EXISTS restaurante_japones.menu (
 
 CREATE TABLE IF NOT EXISTS restaurante_japones.roles_restaurante (
     id INT AUTO_INCREMENT,
-    nombre_rol VARCHAR(40) NOT NULL,
-    descripcion_rol VARCHAR(120),
-    sueldo DECIMAL(9 , 2 ) NOT NULL,
+    nombre_rol VARCHAR(50) NOT NULL,
+    descripcion_rol VARCHAR(200),
+    sueldo DECIMAL(11,2) NOT NULL,
     PRIMARY KEY (id)
 );
 
@@ -53,28 +53,18 @@ CREATE TABLE IF NOT EXISTS restaurante_japones.empleados (
 	INDEX nombre (nombre, apellido)
 );
 
-CREATE TABLE IF NOT EXISTS restaurante_japones.metodos_pago (
-    id INT AUTO_INCREMENT,
-    nombre_metodo VARCHAR(40) NOT NULL,
-    numero_cuenta INT NOT NULL,
-    PRIMARY KEY (id)
-);
-
 CREATE TABLE IF NOT EXISTS restaurante_japones.orden (
     id INT AUTO_INCREMENT,
     id_cliente INT NOT NULL,
     id_empleado INT NOT NULL,
-    id_metodo_pago INT NOT NULL,
     total_orden DECIMAL(9 , 2 ) NOT NULL,
     domicilio TINYINT DEFAULT 0,
     PRIMARY KEY (id),
     FOREIGN KEY (id_cliente)
         REFERENCES clientes (id),
     FOREIGN KEY (id_empleado)
-        REFERENCES empleados (id),
-    FOREIGN KEY (id_metodo_pago)
-        REFERENCES metodos_pago (id)
-);
+        REFERENCES empleados (id)
+   );
 
 CREATE TABLE IF NOT EXISTS restaurante_japones.facturas (
     id INT AUTO_INCREMENT,
@@ -224,4 +214,3 @@ CREATE TABLE IF NOT EXISTS restaurante_japones.direcciones (
         REFERENCES proveedores (id)
         ON DELETE RESTRICT ON UPDATE CASCADE
 );
-

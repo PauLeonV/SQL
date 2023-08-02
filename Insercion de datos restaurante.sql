@@ -22,7 +22,7 @@ INSERT INTO restaurante_japones.clientes(id, nombre, apellido, tipo_documento, d
  (19, 'Robinetta', 'Wynes', 'CI', 35315023),
  (20, 'Mollee', 'Cotelard', 'DNI', 26937341);
  
- INSERT INTO restaurante_japones.categoria_items(id, nombre_categoría) VALUES
+ INSERT INTO restaurante_japones.categoria_plato(id, nombre_categoria) VALUES
  (1, 'Entrada'),
  (2, 'Sopas/Ramen'),
  (3, 'Plato fuerte'),
@@ -31,7 +31,7 @@ INSERT INTO restaurante_japones.clientes(id, nombre, apellido, tipo_documento, d
  (6, 'Plato infantil'),
  (7, 'Adicional');
  
- INSERT INTO restaurante_japones.menu (id, id_categoria, nombre_item,descripcion_item, precio_item) VALUES 
+ INSERT INTO restaurante_japones.platos (id, id_categoria, nombre_plato,descripcion_plato, precio_plato) VALUES 
  (1,1,'Gyozas de cerdo','6 Gyozas rellenas de cerdo con soja',11000 ),
  (2,1,'Gyozas vegetarianas','6 gyozas rellenas de repollo,zuchini y champiñon', 9000),
  (3,1,'Crab Salad','Palmito de cangrejo premium, spicy mayo, tobiko y aguacate', 17500),
@@ -112,7 +112,7 @@ INSERT INTO restaurante_japones.orden (id_cliente,id_empleado,total_orden,domici
 (1, 4, '424000', 1);
 
  
-INSERT INTO restaurante_japones.facturas (id_orden, id_item, cantidad_item, subtotal_venta, fecha_factura) VALUES
+INSERT INTO restaurante_japones.facturas (id_orden, id_plato, cantidad_plato, subtotal_venta, fecha_factura) VALUES
 (1, 11, 4, 108000, '2022-04-10'),
 (1, 17, 4, 24000, '2022-04-10'),
 (1, 3, 8, 140000, '2022-04-10'),
@@ -177,7 +177,7 @@ INSERT INTO restaurante_japones.proveedores (id_pais,nombre, apellido, tipo_docu
 (1, 'Ruì', 'Grason', 'CC', '2293843912');
 
 
-INSERT INTO restaurante_japones.productos (id_item,id_proveedor,nombre_producto,peso,precio_producto) VALUES
+INSERT INTO restaurante_japones.productos (id_plato,id_proveedor,nombre_producto,peso,precio_producto) VALUES
 (1, 1, 'Empaque de Gyozas de cerdo', 0.2, 1500),
 (2, 1, 'Empaque de Gyozas vegetarianas', 0.18, 1300),
 (3, 2, 'Empaque de Crab Salad', 0.25, 1800),
@@ -203,7 +203,7 @@ INSERT INTO restaurante_japones.productos (id_item,id_proveedor,nombre_producto,
 (23, 8, 'Alga Nori para sushi', 0.05, 3000),
 (24, 9, 'Vegetales frescos para tempura', 0.3, 4000);
 
-INSERT INTO restaurante_japones.ingredientes (id_producto,id_item, cantidad_ingrediente) VALUES 
+INSERT INTO restaurante_japones.ingredientes (id_producto,id_plato, cantidad_ingrediente) VALUES 
 (1, 1, 0.05), -- Empaque de Gyozas de cerdo necesita 0.05 kg de cerdo
 (1, 6, 0.2),  -- Empaque de Gyozas de cerdo necesita 0.2 kg de repollo
 (1, 22, 0.01), -- Empaque de Gyozas de cerdo necesita 0.01 kg de cebolla

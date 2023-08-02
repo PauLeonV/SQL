@@ -1,7 +1,8 @@
 -- Curso SQL
 -- Creación de tablas
 -- Estudiante: Paula León
-CREATE DATABASE restaurante_japones;
+ DROP DATABASE IF EXISTS restaurante_japones;
+CREATE DATABASE IF NOT EXISTS restaurante_japones;
 
 USE restaurante_japones;
 
@@ -15,21 +16,21 @@ CREATE TABLE IF NOT EXISTS restaurante_japones.clientes (
     INDEX nombre (nombre , apellido)
 );
 
-CREATE TABLE IF NOT EXISTS restaurante_japones.categoria_items (
+CREATE TABLE IF NOT EXISTS restaurante_japones.categoria_plato (
     id INT AUTO_INCREMENT,
-    nombre_categoría VARCHAR(30) NOT NULL,
+    nombre_categoria VARCHAR(30) NOT NULL,
     PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS restaurante_japones.menu (
+CREATE TABLE IF NOT EXISTS restaurante_japones.platos (
     id INT AUTO_INCREMENT,
     id_categoria INT NOT NULL,
-    nombre_item VARCHAR(40) NOT NULL,
-    descripcion_item VARCHAR(120),
-    precio_item DECIMAL(9 , 2 ),
+    nombre_plato VARCHAR(40) NOT NULL,
+    descripcion_plato VARCHAR(120),
+    precio_plato DECIMAL(9 , 2 ),
     PRIMARY KEY (id),
     FOREIGN KEY (id_categoria)
-        REFERENCES categoria_items (id)
+        REFERENCES categoria_plato (id)
         ON UPDATE CASCADE
 );
 
@@ -69,15 +70,15 @@ CREATE TABLE IF NOT EXISTS restaurante_japones.orden (
 CREATE TABLE IF NOT EXISTS restaurante_japones.facturas (
     id INT AUTO_INCREMENT,
     id_orden INT NOT NULL,
-    id_item INT NOT NULL,
-    cantidad_item INT NOT NULL,
+    id_plato INT NOT NULL,
+    cantidad_plato INT NOT NULL,
     subtotal_venta DECIMAL(9 , 2 ),
     fecha_factura DATE NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (id_orden)
         REFERENCES orden (id),
-    FOREIGN KEY (id_item)
-        REFERENCES menu (id)
+    FOREIGN KEY (id_plato)
+        REFERENCES platos (id)
 );
 
 CREATE TABLE IF NOT EXISTS restaurante_japones.paises_proveedores (
@@ -102,26 +103,26 @@ CREATE TABLE IF NOT EXISTS restaurante_japones.proveedores (
 
 CREATE TABLE IF NOT EXISTS restaurante_japones.productos (
     id INT AUTO_INCREMENT,
-    id_item INT NOT NULL,
+    id_plato INT NOT NULL,
     id_proveedor INT NOT NULL,
     nombre_producto VARCHAR(40) NOT NULL,
     peso DECIMAL(5 , 2 ),
     precio_producto DECIMAL(9 , 2 ) NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY (id_item)
-        REFERENCES menu (id),
+    FOREIGN KEY (id_plato)
+        REFERENCES platos (id),
     FOREIGN KEY (id_proveedor)
         REFERENCES proveedores (id)
 );
 
 CREATE TABLE IF NOT EXISTS restaurante_japones.ingredientes (
     id_producto INT NOT NULL,
-    id_item INT NOT NULL,
+    id_plato INT NOT NULL,
     cantidad_ingrediente DECIMAL(5 , 2 ) NOT NULL,
     FOREIGN KEY (id_producto)
         REFERENCES productos (id),
-    FOREIGN KEY (id_item)
-        REFERENCES menu (id)
+    FOREIGN KEY (id_plato)
+        REFERENCES platos (id)
 );
 
 CREATE TABLE IF NOT EXISTS restaurante_japones.stock (
@@ -214,3 +215,4 @@ CREATE TABLE IF NOT EXISTS restaurante_japones.direcciones (
         REFERENCES proveedores (id)
         ON DELETE RESTRICT ON UPDATE CASCADE
 );
+

@@ -37,7 +37,6 @@ END$$
 USE restaurante_japones$$
 DROP FUNCTION IF EXISTS calcular_total_orden$$
 
-
 CREATE FUNCTION calcular_total_orden (id_de_orden INT)
 RETURNS DECIMAL (9,2)
 DETERMINISTIC

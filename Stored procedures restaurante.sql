@@ -3,8 +3,9 @@ USE restaurante_japones;
 
 DELIMITER $$
 
--- El stored procedure 'ordenar tabla' se crea para que el usuario pueda ingresar el nombre de la tabla, nombre de columna y tipo de orden que serian 'ASC' o 'DESC', estos deberan ser escritos tal cual para
--- el correcto funcionamiento del stored procedure
+-- El stored procedure 'ordenar tabla' se crea para que el usuario pueda ingresar el nombre de la tabla, nombre de columna y tipo de orden que serian 'ASC' o 'DESC', estos deberan ser
+-- escritos tal cual para el correcto funcionamiento del stored procedure
+
 DROP PROCEDURE IF EXISTS sp_ordenar_tabla$$
 CREATE PROCEDURE sp_ordenar_tabla (IN nombre_tabla VARCHAR(25), nombre_columna VARCHAR(20), tipo_orden VARCHAR (4))
 BEGIN

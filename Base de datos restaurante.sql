@@ -613,7 +613,7 @@ GROUP BY cp.id, cp.nombre_categoria
 ORDER BY SUM(f.subtotal_venta) DESC;
 
 -- CREACION DE FUNCIONES 
--- Función para caulcular el iva
+# Función para caulcular el iva
 USE restaurante_japones;
 DROP FUNCTION IF EXISTS calcular_iva;
 
@@ -630,7 +630,7 @@ BEGIN
     RETURN resultado_iva;
 END$$
 
--- Función para calcular el total de las facturas que comparten el mismo id de orden
+# Función para calcular el total de las facturas que comparten el mismo id de orden
 USE restaurante_japones$$
 DROP FUNCTION IF EXISTS calcular_subtotal_factura$$
 
@@ -648,7 +648,7 @@ BEGIN
 
 RETURN subtotal;
 END$$
--- Función para calcular el total de una orden
+# Función para calcular el total de una orden
 USE restaurante_japones$$
 DROP FUNCTION IF EXISTS calcular_total_orden$$
 

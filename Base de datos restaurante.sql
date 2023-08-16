@@ -74,9 +74,11 @@ CREATE TABLE IF NOT EXISTS restaurante_japones.facturas (
     fecha_factura DATE NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (id_orden)
-        REFERENCES orden (id),
+        REFERENCES orden (id)
+        ON DELETE CASCADE,
     FOREIGN KEY (id_plato)
         REFERENCES platos (id)
+        ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS restaurante_japones.paises_proveedores (
@@ -214,7 +216,7 @@ CREATE TABLE IF NOT EXISTS restaurante_japones.direcciones (
         ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
--- Insercion de datos para la base de datos del restaurante japones
+-- INSERCION DE DATOS 
 
 INSERT INTO restaurante_japones.clientes(id, nombre, apellido, tipo_documento, documento) VALUES
  (1, 'Britni', 'Hollidge', 'CC', 12363236),
@@ -456,30 +458,30 @@ INSERT INTO restaurante_japones.ingredientes (id_producto,id_plato, cantidad_ing
 (24, 14, 0.05); -- Vegetales frescos para tempura necesita 0.05 kg de leche condensada
 
 INSERT INTO restaurante_japones.stock (id_producto, id_proveedor, cantidad_stock, cantidad_minima, cantidad_ideal) VALUES
-(1, 2, 80, 15, 180),
-(2, 1, 150, 30, 250),
-(3, 2, 90, 30, 160), 
-(4, 3, 50, 10, 100),
-(5, 3, 60, 12, 110), 
-(6, 5, 180, 45, 350), 
-(7, 4, 180, 40, 350),
-(8, 6, 50, 10, 100),
-(9, 6, 60, 12, 110),
-(10, 7, 200, 50, 400),
-(11, 7, 180, 45, 350),
-(12, 8, 180, 40, 350),
-(13, 8, 50, 10, 100),
-(14, 9, 60, 12, 110),
-(15, 9, 200, 50, 400),
-(16, 10, 180, 45, 350),
-(17, 10, 180, 40, 350),
-(18, 1, 50, 10, 100),
-(19, 1, 60, 12, 110),
-(20, 2, 200, 50, 400),
-(21, 2, 180, 45, 350),
-(22, 3, 180, 40, 350),
-(23, 3, 50, 10, 100),
-(24, 4, 60, 12, 110);
+(1, 2, 20, 15, 180),
+(2, 1, 10, 30, 250),
+(3, 2, 10, 30, 160), 
+(4, 3, 15, 10, 100),
+(5, 3, 12, 12, 110), 
+(6, 5, 20, 45, 350), 
+(7, 4, 18, 40, 350),
+(8, 6, 10, 10, 100),
+(9, 6, 15, 12, 110),
+(10, 7, 20, 50, 400),
+(11, 7, 25, 45, 350),
+(12, 8, 18, 40, 350),
+(13, 8, 5, 10, 100),
+(14, 9, 6, 12, 110),
+(15, 9, 20, 50, 400),
+(16, 10, 18, 45, 350),
+(17, 10, 18, 40, 350),
+(18, 1, 5, 10, 100),
+(19, 1, 6, 12, 110),
+(20, 2, 20, 50, 400),
+(21, 2, 18, 45, 350),
+(22, 3, 18, 40, 350),
+(23, 3, 5, 10, 100),
+(24, 4, 6, 12, 110);
 
 INSERT INTO restaurante_japones.pedidos (id_producto, id_proveedor, cantidad_producto, total_pedido, fecha_pedido) VALUES
 (1, 1, 10, 30000, '2022-03-15'),
@@ -579,21 +581,25 @@ INSERT INTO restaurante_japones.direcciones (id_cliente, id_empleado, id_proveed
 
 
 -- CREACION DE VISTAS 
-
-USE restaurante_japones;
-
-CREATE OR REPLACE VIEW info_completa_clientes AS 
+# Se crea una vista para tener en una sola tabla la información completa de los clientes
+CREATE OR REPLACE VIEW vw_info_completa_clientes AS 
 SELECT 
 	c.nombre AS 'Nombre',
     c.apellido AS 'Apellido',
     e.email AS 'Email cliente',
-    t.telefono AS 'Telefono cliente'
+    t.telefono AS 'Telefono cliente',
+    d.direccion AS 'Direccion cliente'
 FROM clientes AS c
-LEFT JOIN emails AS e ON e.id_cliente = c.id
-LEFT JOIN telefonos AS t ON t.id_cliente = c.id
-WHERE e.id_cliente IS NOT NULL AND t.id_cliente IS NOT NULL;
+JOIN emails AS e ON e.id_cliente = c.id
+JOIN telefonos AS t ON t.id_cliente = c.id
+JOIN direcciones AS d ON d.id_cliente = c.id
+WHERE e.id_cliente IS NOT NULL AND t.id_cliente IS NOT NULL	
+	AND email_principal = 1 
+    AND telefono_principal = 1 
+    AND direccion_principal = 1;
 
-CREATE OR REPLACE VIEW platos_mas_vendidos  AS
+# Se crea una vista para tener informacion sobre los platos mas vendidos 
+CREATE OR REPLACE VIEW vw_platos_mas_vendidos  AS
 SELECT
 	p.nombre_plato AS 'Nombre Plato'
     , COUNT(*) AS 'Cantidad'
@@ -602,7 +608,8 @@ JOIN platos AS p ON p.id = f.id_plato
 GROUP BY p.nombre_plato 
 ORDER BY COUNT(*) DESC;
 
-CREATE OR REPLACE VIEW ingresos_por_categoria  AS
+# Se crea la vista de ingresos por categorias para hacer un informe sobre estas e implementar una estrategia de ventas
+CREATE OR REPLACE VIEW vw_ingresos_por_categoria  AS
 SELECT
 	cp.nombre_categoria AS 'Categoria',
     SUM(f.subtotal_venta) AS 'Ingresos'
@@ -612,9 +619,37 @@ LEFT JOIN facturas AS f ON p.id = f.id_plato
 GROUP BY cp.id, cp.nombre_categoria
 ORDER BY SUM(f.subtotal_venta) DESC;
 
+# Se crea una vista que ayude a consultar sobre los productos que se necesitan pedir
+CREATE OR REPLACE VIEW vw_productos_a_pedir AS
+SELECT
+    p.id,
+    p.nombre_producto AS nombre,
+    s.id_proveedor,
+    s.cantidad_stock AS cantidad_en_stock,
+    (s.cantidad_ideal - s.cantidad_stock) AS cantidad_por_pedir
+FROM
+    productos p
+JOIN
+    stock s ON p.id = s.id_producto
+WHERE
+    s.cantidad_stock < s.cantidad_minima;
+ 
+ # Se crea una vista con la información detallada de cada empleado, incluyendo aspectos relevantes de su rol en el restaurante
+CREATE OR REPLACE VIEW vw_roles_empleados AS 
+	SELECT 
+		e.nombre,
+        e.apellido,
+        e.horario,
+        r.nombre_rol AS rol,
+		r.descripcion_rol AS descripcion,
+        r.sueldo
+	FROM empleados AS e 
+    JOIN roles_restaurante AS r ON r.id = e.id_rol;
+    
 -- CREACION DE FUNCIONES 
-# Función para caulcular el iva
-USE restaurante_japones;
+
+# Función para caulcular el iva en Colombia
+
 DROP FUNCTION IF EXISTS calcular_iva;
 
 DELIMITER $$
@@ -629,7 +664,6 @@ BEGIN
     SET resultado_iva = subtotal * iva;
     RETURN resultado_iva;
 END$$
-
 # Función para calcular el total de las facturas que comparten el mismo id de orden
 USE restaurante_japones$$
 DROP FUNCTION IF EXISTS calcular_subtotal_factura$$
@@ -648,7 +682,9 @@ BEGIN
 
 RETURN subtotal;
 END$$
+
 # Función para calcular el total de una orden
+
 USE restaurante_japones$$
 DROP FUNCTION IF EXISTS calcular_total_orden$$
 
@@ -668,7 +704,97 @@ END$$
 
 DELIMITER ;
 
+-- STORED PROCEDURES 
+
+DELIMITER $$
+
+# El stored procedure 'ordenar tabla' se crea para que el usuario pueda ingresar el nombre de la tabla, nombre de columna y tipo de orden que serian 'ASC' o 'DESC', 
+# estos deberan ser escritos tal cual para el correcto funcionamiento del stored procedure
+DROP PROCEDURE IF EXISTS sp_ordenar_tabla$$
+CREATE PROCEDURE sp_ordenar_tabla (IN nombre_tabla VARCHAR(25), nombre_columna VARCHAR(20), tipo_orden VARCHAR (4))
+BEGIN
+	IF nombre_tabla <> '' AND nombre_columna <> '' AND tipo_orden <> '' THEN # Se usa un 'AND' para asegurarnos que el usuario rellene todos los campos solicitados
+		SET @tabla_orden = CONCAT('SELECT*FROM ', nombre_tabla,' ORDER BY ', nombre_columna, ' ', tipo_orden);
+	
+	END IF; 
+    
+    SET @consulta = CONCAT(@tabla_orden);
+    
+    PREPARE ejecutar FROM @consulta;
+    EXECUTE ejecutar;
+    DEALLOCATE PREPARE ejecutar;
+    
+END$$
+
+DROP PROCEDURE IF EXISTS sp_ingresar_nuevos_platos$$
+CREATE PROCEDURE sp_ingresar_nuevos_platos (IN categoria INT, nombre VARCHAR(40), descripcion VARCHAR(120), precio DECIMAL(9,2))
+BEGIN 
+	INSERT INTO platos (id_categoria, nombre_plato, descripcion_plato, precio_plato)
+    VALUES (categoria,nombre,descripcion,precio);
+END$$
+
+# El stored procedure 'modificar_total_orden' se crea para corregir el total de la orden y asegurarnos que este valor esté correcto usando la función para calcular el total de la orden
+DROP PROCEDURE IF EXISTS sp_modificar_total_orden$$
+CREATE PROCEDURE sp_modificar_total_orden (IN id_orden INT)
+BEGIN
+	DECLARE total_orden_iva DECIMAL(9, 2);
+    DECLARE subtotal_orden DECIMAL(9, 2);
+    DECLARE total_orden_actual DECIMAL(9, 2);
+	
+    SELECT
+        SUM(f.subtotal_venta) AS subtotal_orden,
+        o.total_orden
+    INTO subtotal_orden, total_orden_actual
+    FROM orden AS o
+    LEFT JOIN facturas AS f ON o.id = f.id_orden
+    WHERE o.id = id_orden
+    GROUP BY o.id;
+
+    SET total_orden_iva = calcular_total_orden(id_orden);
+
+    IF total_orden_iva <> total_orden_actual THEN
+        UPDATE orden SET total_orden = total_orden_iva WHERE id = id_orden;
+    END IF;
+END$$
+DELIMITER ;
 
 
+-- Creación de Triggers
 
+# Se crea una tabla complementaria la cual asociaremos al trigger cliente nuevo
 
+CREATE TABLE IF NOT EXISTS restaurante_japones.log_clientes_nuevos (
+	id INT AUTO_INCREMENT,
+    id_cliente INT NOT NULL,
+    fecha_añadido DATE NOT NULL,
+    name_user VARCHAR(80),
+    PRIMARY KEY (id)
+);
+# Después se crea un trigger que permitira registrar nuevos clientes en la tabla llamada clientes
+DROP TRIGGER IF EXISTS tr_cliente_nuevo;
+CREATE TRIGGER tr_cliente_nuevo
+AFTER INSERT ON  clientes
+FOR EACH ROW 
+	INSERT INTO log_clientes_nuevos (id_cliente, fecha_añadido, name_user)
+    VALUES(NEW.id, curdate(), user());
+
+# Se crea una tabla complementaria parecida a la tabla de facturas que asociaremos al trigger de eliminacion de facturas
+CREATE TABLE IF NOT EXISTS log_facturas_eliminadas LIKE facturas;
+ALTER TABLE log_facturas_eliminadas
+	DROP id_orden,
+	DROP COLUMN id_plato,
+    DROP COLUMN cantidad_plato,
+	ADD COLUMN fecha_eliminado DATE NOT NULL,
+    ADD COLUMN name_user VARCHAR (80);
+   
+    
+# Después creamos un trigger que permite guardar los datos importantes del registro que se elimino de la tabla de facturas en caso de ser necesitado o en caso de haber sido eliminado por error
+DROP TRIGGER IF EXISTS tr_facturas_eliminadas;
+
+DELIMITER $$
+CREATE TRIGGER tr_facturas_eliminadas BEFORE DELETE ON facturas
+	FOR EACH ROW
+    BEGIN	
+		INSERT INTO log_facturas_eliminadas (id, subtotal_venta, fecha_factura, fecha_eliminado, name_user)
+        VALUES (OLD.id, OLD.subtotal_venta, OLD.fecha_factura, curdate(), user());
+	END$$

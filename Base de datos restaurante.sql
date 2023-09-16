@@ -823,5 +823,59 @@ BEGIN
     -- ROLLBACK;
     -- COMMIT;
 END $$
-    
+	
 DELIMITER ;
+
+-- Sentencias sublenguaje TCL
+
+
+# Se hace un store procedure para registrar varias ventas a la vez por lo que se incluye una transacción en caso de cometer errores 
+DROP PROCEDURE IF EXISTS sp_registrar_venta;
+DELIMITER $$
+
+CREATE PROCEDURE sp_registrar_venta(IN in_id_cliente INT, IN in_id_empleado INT , IN in_domicilio TINYINT)
+BEGIN
+	DECLARE orden INT;
+    IF in_id_empleado <= 0 OR in_id_cliente <= 0 THEN
+		SIGNAL SQLSTATE '45000';
+	ELSE
+		START TRANSACTION;
+        
+		INSERT INTO orden(id_cliente,id_empleado, domicilio) 
+		VALUES (in_id_cliente, in_id_empleado, in_domicilio);
+    
+		SET @orden = LAST_INSERT_ID();
+		INSERT INTO facturas (id_orden, id_plato, cantidad_plato, subtotal_venta, fecha_factura)
+		VALUES (@orden, 1,2, 22000, '2022-04-20'),
+		(@orden, 9,1, 15000, '2022-04-20'), 
+		(@orden, 13,2, 22000, '2022-04-20'), 
+		(@orden, 15,2, 12000, '2022-04-20'),
+		(@orden, 14,1, 5000, '2022-04-20');
+	END IF;
+    -- ROLLBACK;
+    -- COMMIT;
+END $$
+
+DELIMITER ;
+# Se realiza la insercion de nuevos productos en la tabla 'productos' y se prepara un savepoint lote_1
+
+START TRANSACTION;
+
+INSERT INTO productos (id_plato, id_proveedor, nombre_producto, peso, precio_producto) VALUES (1, 1, 'Yakitori de Pollo', 0.3, 2500);
+INSERT INTO productos (id_plato, id_proveedor, nombre_producto, peso, precio_producto) VALUES (8, 3, 'Pad Thai de Camarones', 0.2, 18000);
+INSERT INTO productos (id_plato, id_proveedor, nombre_producto, peso, precio_producto) VALUES (2, 3, 'Tempura de Vegetales', 0.25, 2100);
+INSERT INTO productos (id_plato, id_proveedor, nombre_producto, peso, precio_producto) VALUES (4, 2, 'Sushi de Salmón y Aguacate', 0.1, 12000);
+INSERT INTO productos (id_plato, id_proveedor, nombre_producto, peso, precio_producto) VALUES (8, 5, 'Roll de Tempura de Langosta', 0.15, 15000);
+
+ savepoint lote_1;   
+ 
+INSERT INTO productos (id_plato, id_proveedor, nombre_producto, peso, precio_producto) VALUES (7, 4, 'Ramen Picante', 0.2, 1850);
+INSERT INTO productos (id_plato, id_proveedor, nombre_producto, peso, precio_producto) VALUES (1, 4, 'Gyozas de Cerdo al Vapor', 0.35, 2700);
+INSERT INTO productos (id_plato, id_proveedor, nombre_producto, peso, precio_producto) VALUES (10, 2, 'Bol de Poke de Atún', 0.15, 5500);
+
+savepoint lote_2;
+release savepoint lote_1;
+
+-- ROLLBACK;
+-- COMMIT;
+

@@ -829,7 +829,8 @@ DELIMITER ;
 -- Sentencias sublenguaje TCL
 
 
-# Se hace un store procedure para registrar varias ventas a la vez por lo que se incluye una transacción en caso de cometer errores 
+# Se hace un store procedure para registrar varias ordenes a la vez por lo que se incluye una transacción en caso de cometer errores 
+# Además para agregar el total de la venta en la tabla de 'orden' se utiliza el stored procedure 'sp_modificar_total_orden'	
 DROP PROCEDURE IF EXISTS sp_registrar_venta;
 DELIMITER $$
 
